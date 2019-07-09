@@ -1,0 +1,11 @@
+{
+  "additionalFiles": "/Camera.cpp,/Camera.h,/WebPost.cpp,/WebPost.h,/camera_pins.h",
+  "builtInLibrariesFolders": "/home/mink/devtools/Arduino/libraries",
+  "customBuildProperties": "build.path=/home/mink/data/work/AgriCam/build,build.warn_data_percentage=75,runtime.tools.esptool_py.path=/home/mink/devtools/Arduino/portable/packages/esp32/tools/esptool_py/2.6.1,runtime.tools.esptool_py-2.6.1.path=/home/mink/devtools/Arduino/portable/packages/esp32/tools/esptool_py/2.6.1,runtime.tools.mkspiffs.path=/home/mink/devtools/Arduino/portable/packages/esp32/tools/mkspiffs/0.2.3,runtime.tools.mkspiffs-0.2.3.path=/home/mink/devtools/Arduino/portable/packages/esp32/tools/mkspiffs/0.2.3,runtime.tools.xtensa-esp32-elf-gcc.path=/home/mink/devtools/Arduino/portable/packages/esp32/tools/xtensa-esp32-elf-gcc/1.22.0-80-g6c4433a-5.2.0,runtime.tools.xtensa-esp32-elf-gcc-1.22.0-80-g6c4433a-5.2.0.path=/home/mink/devtools/Arduino/portable/packages/esp32/tools/xtensa-esp32-elf-gcc/1.22.0-80-g6c4433a-5.2.0",
+  "fqbn": "esp32:esp32:esp32wrover:PartitionScheme=huge_app,FlashMode=qio,FlashFreq=80,UploadSpeed=921600,DebugLevel=verbose",
+  "hardwareFolders": "/home/mink/devtools/Arduino/hardware,/home/mink/devtools/Arduino/portable/packages",
+  "otherLibrariesFolders": "/home/mink/devtools/Arduino/portable/sketchbook/libraries",
+  "runtime.ide.version": "10809",
+  "sketchLocation": "/home/mink/data/work/AgriCam/AgriCam.ino",
+  "toolsFolders": "/home/mink/devtools/Arduino/tools-builder,/home/mink/devtools/Arduino/hardware/tools/avr,/home/mink/devtools/Arduino/portable/packages"
+}

@@ -1,0 +1,3 @@
+URL
+curl -s -F uploadedfile=@20170509190000__test09__1CA0__2021.jpg -F network=test09 -F filedatetime=20170509190000 http://agritronics.nstda.or.th/webpost0606/log_imgcap.php
+curl -s -F uploadedfile=@20190701120000__agricam00__1000__100.jpg -F network=agricam00 -F filedatetime=20190701120000 http://agritronics.nstda.or.th/webpost0606/log_imgcap.php

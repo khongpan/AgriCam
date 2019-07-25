@@ -11,12 +11,35 @@
 
 
 
-const char* ssid = "BigForest";
-const char* password = "fortestonly";
+const char* ssid = "FlyFly";
+const char* password = "flyuntildie";
 
-//void startCameraServer();
+void startCameraServer();
 
-void syncTime() {
+
+void NetMaintain() {
+  int connect_fail=0;
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wifi connecting");
+    WiFi.disconnect();
+    WiFi.begin();
+    int wait_cnt=60;
+    while (wait_cnt-- > 0) {
+      if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\r\nWifi connected");
+        connect_fail=0;
+        return;
+      }
+      delay(1000);
+      Serial.print(".");
+    }  
+    connect_fail++;
+    if (connect_fail >= 5) ESP.restart();
+  } 
+}
+
+
+void TimeSync() {
   struct tm tmstruct ;
   byte daysavetime=0;
   long timezone=7;
@@ -46,22 +69,17 @@ void setup() {
   CameraSetup();
 
   WiFi.begin(ssid, password);
-  Serial.print("Wifi connecting");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
+  delay(1000);
 
-  syncTime();
+  NetMaintain();
 
-  //startCameraServer();
+  TimeSync();
+
+  startCameraServer();
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
-
 
 }
 
@@ -82,27 +100,14 @@ String GetCurrentTimeString() {
 }
 
 
-int reconnect=0;
+
+
 int pic_cnt=0;
 void loop() {
 
   int capture_retry=0;
 
-  reconnect=0;
-  while (WiFi.status() != WL_CONNECTED) {
-      reconnect++;
-      if (reconnect >= 5) ESP.restart();
-      Serial.println("Reconnecting to WiFi...");
-      WiFi.disconnect();
-      WiFi.begin();
-      int wait_cnt=0;
-      while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        wait_cnt++;
-        Serial.print(".");
-        if (wait_cnt>=60) break;
-      }  
-  } 
+  NetMaintain();
 
   {
     struct tm t;
@@ -118,7 +123,8 @@ void loop() {
     if (pic_cnt>0) {
       //if (((t.tm_min % 5 != 0) || (t.tm_sec != 0))) return;
       //if (((t.tm_min % 5 != 4) || (t.tm_sec != 55))) return;
-      if (((t.tm_min % 15 != 14) || (t.tm_sec != 55))) return;
+      //if (((t.tm_min % 15 != 14) || (t.tm_sec != 55))) return;
+      if (((t.tm_min  != 0) || (t.tm_sec != 0))) return;
     }
   }
 
@@ -131,21 +137,21 @@ void loop() {
   camera_fb_t *fb;
   String my_id_str = "__agricam00__1000__100";
 
-  CameraFlash(1);
-  delay(5000);
+  
   String time_str= GetCurrentTimeString();
   String img_name = time_str + my_id_str + ".jpg";
 
+  CameraFlash(1);
   fb=CameraCapture();
-  CameraFlash(0);
   if (fb==NULL)  {
     capture_retry++;
     return;
   }
   Serial.println("pic_number: " + String(pic_cnt++));
   String res=WebPostSendImage(img_name,time_str,fb->buf,fb->len);
-  Serial.println("Sever Response:");
+  Serial.println("Server Response:");
   Serial.print(res);
   CameraRelease(fb);
+  CameraFlash(0);
 }
 

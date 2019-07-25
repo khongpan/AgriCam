@@ -64,11 +64,7 @@ void CameraSetup() {
   }
   //drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_UXGA);
-
-#if defined(CAMERA_MODEL_M5STACK_WIDE)
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
-#endif
+  s->set_saturation(s,1);
 }
 
 camera_fb_t* CameraCapture() {

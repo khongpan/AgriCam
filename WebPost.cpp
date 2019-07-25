@@ -111,7 +111,8 @@ String WebPostSendImage(String img_name,String time_str, uint8_t *data_pic,size_
       //String serverRes = client.readString();
       len = client.readBytes(buff,255);
       buff[len]='\0';
-        return(String(len));
+        //return(String(len));
+        if(len==214) return("ok"); else return("nok");
     }
    }
 #endif

@@ -3,10 +3,10 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/mink/devtools/Arduino/portable/packages/esp32/tools/**",
-                "/home/mink/devtools/Arduino/portable/packages/esp32/hardware/esp32/1.0.2/**",
+                "/home/mink/devtools/arduino/portable/packages/esp32/tools/**",
+                "/home/mink/devtools/arduino/portable/packages/esp32/hardware/esp32/1.0.2/**",
                 "${workspaceFolder}/**",
-                "~/devtools/Arduino/portable/**"
+                "~/devtools/arduino/portable/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -83,7 +83,7 @@ void setup() {
 
 }
 
-#define CAMERA_ID "__agricam00__1000__100"
+
 
 
 String GetCurrentTimeString() {
@@ -125,6 +125,7 @@ void loop() {
       //if (((t.tm_min % 5 != 4) || (t.tm_sec != 55))) return;
       //if (((t.tm_min % 15 != 14) || (t.tm_sec != 55))) return;
       if (((t.tm_min  != 0) || (t.tm_sec != 0))) return;
+      //if (t.tm_sec != 0) return;
     }
   }
 
@@ -148,9 +149,15 @@ void loop() {
     return;
   }
   Serial.println("pic_number: " + String(pic_cnt++));
-  String res=WebPostSendImage(img_name,time_str,fb->buf,fb->len);
-  Serial.println("Server Response:");
-  Serial.print(res);
+  int send_try=0;
+  String res;
+  do { 
+    send_try++;
+    Serial.println("try " + String(send_try));
+    res=WebPostSendImage(img_name,time_str,fb->buf,fb->len);
+    Serial.println("Server Response:");
+    Serial.print(res);
+  } while(res!="ok" && (send_try < 3));
   CameraRelease(fb);
   CameraFlash(0);
 }

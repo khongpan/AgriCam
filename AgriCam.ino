@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <time.h>
+
+#include "soc/soc.h"           // Disable brown out problems
+#include "soc/rtc_cntl_reg.h"  // Disable brown out problems
+
+#include "Storage.h"
 #include "Camera.h"
 #include "WebPost.h"
 
@@ -9,12 +14,24 @@
 //            or another board which has PSRAM enabled
 //
 
-
-
-const char* ssid = "FlyFly";
-const char* password = "flyuntildie";
+#define LED 33
+String my_id_str = "__agricam00__1000__100";
+String pict_folder = "/pict/";
+//const char* ssid = "FlyFly";
+//const char* password = "flyuntildie";
+const char* ssid = "TP-LINK_B48E7E";
+const char* password = "opensesami";
 
 void startCameraServer();
+
+
+void LedOn(){
+  digitalWrite(LED,0);
+}
+
+void LedOff() {
+  digitalWrite(LED,1);
+}
 
 
 void NetMaintain() {
@@ -30,7 +47,10 @@ void NetMaintain() {
         connect_fail=0;
         return;
       }
-      delay(1000);
+      LedOn();
+      delay(500);
+      LedOff();
+      delay(500);
       Serial.print(".");
     }  
     connect_fail++;
@@ -38,45 +58,59 @@ void NetMaintain() {
   } 
 }
 
-
 void TimeSync() {
   struct tm tmstruct ;
   byte daysavetime=0;
   long timezone=7;
-  Serial.println("Contacting Time Server");
-  //configTime(3600*timezone, daysavetime*3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
-  configTime(3600 * timezone, daysavetime * 3600, "clock.nectec.or.th", "0.pool.ntp.org", "1.pool.ntp.org");              //Set configTime NTP
-  vTaskDelay(2000);
-  tmstruct.tm_year = 0;
-  Serial.print("OK");
-  while (!getLocalTime(&tmstruct, 1000))
-  {
-    Serial.print(".");
+  int sync_fail=0;
+  int wait_sec=0;
+  int sync=0;
+
+  while(sync_fail<3) {
+  
+    Serial.println("Contacting Time Server");
+    //configTime(3600*timezone, daysavetime*3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+    configTime(3600 * timezone, daysavetime * 3600, "clock.nectec.or.th", "0.pool.ntp.org", "1.pool.ntp.org");              //Set configTime NTP
+    vTaskDelay(2000);
+    tmstruct.tm_year = 0;
+    Serial.print("OK");
+    wait_sec=0;
+    while (wait_sec<20)
+    {
+      Serial.print(".");
+      LedOn();
+      if (getLocalTime(&tmstruct, 900)) {
+        Serial.printf("\r\nNow is : %d-%02d-%02d %02d:%02d:%02d\r\n", (tmstruct.tm_year) + 1900, ( tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour , tmstruct.tm_min, tmstruct.tm_sec);
+        return;
+      }
+      LedOff();
+      delay(100);
+      wait_sec++;
+    }
+    sync_fail++;
   }
 
-  Serial.printf("\r\nNow is : %d-%02d-%02d %02d:%02d:%02d\r\n", (tmstruct.tm_year) + 1900, ( tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour , tmstruct.tm_min, tmstruct.tm_sec);
+  ESP.restart();
 
 }
 
-#define LED 33
+
 void setup() {
+
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
 
   pinMode(LED,OUTPUT_OPEN_DRAIN);
-
+  StorageSetup();
   CameraSetup();
-
   WiFi.begin(ssid, password);
   delay(1000);
-
   NetMaintain();
-
   TimeSync();
-
   startCameraServer();
-
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
@@ -103,9 +137,10 @@ String GetCurrentTimeString() {
 
 
 int pic_cnt=0;
+int capture_retry=0;
 void loop() {
 
-  int capture_retry=0;
+  
 
   NetMaintain();
 
@@ -113,11 +148,13 @@ void loop() {
     struct tm t;
     static int cnt=0,led=0;
     cnt++;
-    if (cnt==10) {
+    if (cnt==30) {
       cnt=0;
-      led=led^1;
-      digitalWrite(LED,led);
+      LedOn();   
+    } else if (cnt==4) {
+      LedOff();
     }
+
     vTaskDelay(100);
     getLocalTime(&t, 5000);
     if (pic_cnt>0) {
@@ -133,11 +170,11 @@ void loop() {
   if (capture_retry>=3) {
     capture_retry = 0;
     //put code to init camera here
+    ESP.restart();
+    
   }
 
-  camera_fb_t *fb;
-  String my_id_str = "__agricam00__1000__100";
-
+  camera_fb_t *fb= (camera_fb_t *)1;
   
   String time_str= GetCurrentTimeString();
   String img_name = time_str + my_id_str + ".jpg";
@@ -148,8 +185,17 @@ void loop() {
     capture_retry++;
     return;
   }
+  capture_retry=0;
   Serial.println("pic_number: " + String(pic_cnt++));
   int send_try=0;
+
+
+  if(send_try==0) {
+    String full_file_path = pict_folder + img_name;
+    Serial.printf("Picture file name: %s\n", full_file_path.c_str());
+    StorageWriteFile(full_file_path.c_str(),fb->buf,fb->len);
+  }
+
   String res;
   do { 
     send_try++;
@@ -157,8 +203,10 @@ void loop() {
     res=WebPostSendImage(img_name,time_str,fb->buf,fb->len);
     Serial.println("Server Response:");
     Serial.print(res);
-  } while(res!="ok" && (send_try < 3));
+  } while(res!="ok" && (send_try < 10));
+
   CameraRelease(fb);
   CameraFlash(0);
+
 }
 

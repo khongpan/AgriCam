@@ -8,5 +8,6 @@ void CameraSetup();
 camera_fb_t* CameraCapture();
 void CameraRelease(camera_fb_t *fb);
 void CameraFlash(int on);
+void CameraDeinit();
 
 #endif

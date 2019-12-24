@@ -84,12 +84,17 @@ void CameraRelease(camera_fb_t* fb) {
   esp_camera_fb_return(fb);
 }
 
+void CameraDeinit() {
+  esp_camera_deinit();
+}
+
+
 #define FLASH_LED (4)
 void CameraFlash(int on) {
-  pinMode(FLASH_LED,OUTPUT_OPEN_DRAIN);
-  if (on) 
-    digitalWrite(FLASH_LED,1);
-  else
-    digitalWrite(FLASH_LED,0);
+  //pinMode(FLASH_LED,OUTPUT_OPEN_DRAIN);
+  //if (on) 
+    //digitalWrite(FLASH_LED,1);
+  //else
+    //digitalWrite(FLASH_LED,0);
   
 }

@@ -17,10 +17,9 @@
 #define LED 33
 String my_id_str = "__agricam00__1000__100";
 String pict_folder = "/pict/";
-//const char* ssid = "FlyFly";
-//const char* password = "flyuntildie";
-const char* ssid = "TP-LINK_B48E7E";
-const char* password = "opensesami";
+const char* ssid = "ssid";
+const char* password = "password";
+
 
 void startCameraServer();
 
@@ -140,8 +139,6 @@ int pic_cnt=0;
 int capture_retry=0;
 void loop() {
 
-  
-
   NetMaintain();
 
   {
@@ -181,6 +178,7 @@ void loop() {
 
   CameraFlash(1);
   fb=CameraCapture();
+  CameraFlash(0);
   if (fb==NULL)  {
     capture_retry++;
     return;
@@ -206,7 +204,7 @@ void loop() {
   } while(res!="ok" && (send_try < 10));
 
   CameraRelease(fb);
-  CameraFlash(0);
+ 
 
 }
 
